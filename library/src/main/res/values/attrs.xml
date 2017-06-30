@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="DragMoreScrollView">
+        <attr name="photoReservedHeight" format="dimension"/>
+        <attr name="fullAnimationDuration" format="integer"/>
+    </declare-styleable>
+</resources>
