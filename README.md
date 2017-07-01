@@ -1,7 +1,7 @@
 # DragMoreScrollView
 一种浏览图片的交互效果实现，类似iOS相册
 
-![](http://upload-images.jianshu.io/upload_images/2633254-04c2c9b6c551bf71.gif)
+![](https://ooo.0o0.ooo/2017/07/01/595735aab1f4a.jpeg)
 
 ### 使用方法:
 ```
