@@ -42,6 +42,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        overridePendingTransition(0,0);
 
         mScaleFormat = new DecimalFormat("#.#");
 
@@ -52,6 +53,7 @@ public class DetailActivity extends AppCompatActivity {
         mIvDetail.setOnScaleChangeListener(new OnScaleChangedListener() {
             @Override
             public void onScaleChange(float scaleFactor, float focusX, float focusY) {
+                //当图片正在缩放浏览的时候，禁用ScrollView
                 String scale = mScaleFormat.format(mIvDetail.getScale());
                 Log.d("scale",scale);
                 if (Float.parseFloat(scale) > 1) {
@@ -61,8 +63,11 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
         });
+        //设置图片宽高比
+        mDragMoreScrollView.setZoomRect((Rect) getIntent().getParcelableExtra("rect"));
         mDragMoreScrollView.setRatio(getIntent().getFloatExtra("ratio", 1.69f));
-        mDragMoreScrollView.setExitZoomRect((Rect) getIntent().getParcelableExtra("rect"));
+
+        //处于详情模式的时候应禁用图片缩放功能，在退出的时候finish Activity
         mDragMoreScrollView.setOnStatusChangeListener(new DragMoreScrollView.OnStatusChangeListener() {
             @Override
             public void onDetailMode() {
@@ -79,5 +84,14 @@ public class DetailActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    public void finish() {
+        if(mDragMoreScrollView.isShown()){
+            mDragMoreScrollView.zoomToExit();
+        }else{
+            super.finish();
+        }
     }
 }

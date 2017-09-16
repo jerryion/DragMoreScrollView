@@ -20,6 +20,7 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.ScrollView;
 
 /**
+ * 一种浏览图片的交互方式
  * Created by CrazyPumPkin on 2017/6/11.
  */
 
@@ -77,8 +78,8 @@ public class DragMoreScrollView extends ScrollView {
     private float mLastX;
     private float mLastY;
 
-    //退出时应该移动到这个矩形内
-    private Rect mExitZoomRect;
+    //退出时应该移动到这个矩形内，进入时应该从这个矩形开始放大
+    private Rect mZoomRect;
 
     //原始状态下的图片宽高
     private int mPhotoWidth;
@@ -163,6 +164,7 @@ public class DragMoreScrollView extends ScrollView {
                 }
                 //从图片模式切换到详情模式的位移距离
                 mDistancePhotoToDetail = getHeight() - mTopBottomEmpty - mPhotoReservedHeight;
+                zoomToEnter();
             }
         });
     }
@@ -171,8 +173,8 @@ public class DragMoreScrollView extends ScrollView {
      * 设置拖动退出时缩放和位移的最终区域
      * @param rect
      */
-    public void setExitZoomRect(Rect rect) {
-        mExitZoomRect = rect;
+    public void setZoomRect(Rect rect) {
+        mZoomRect = rect;
     }
 
     @Override
@@ -346,10 +348,10 @@ public class DragMoreScrollView extends ScrollView {
     /**
      * 拖动图片退出
      */
-    private void zoomToExit() {
-        int translationX = mExitZoomRect.centerX() - getWidth() / 2;
-        int translationY = mExitZoomRect.centerY() - getHeight() / 2;
-        float scale = Math.min(mExitZoomRect.width() / (float) mPhotoWidth, mExitZoomRect.height() / (float) mPhotoHeight);
+    public void zoomToExit() {
+        int translationX = mZoomRect.centerX() - getWidth() / 2;
+        int translationY = mZoomRect.centerY() - getHeight() / 2;
+        float scale = Math.min(mZoomRect.width() / (float) mPhotoWidth, mZoomRect.height() / (float) mPhotoHeight);
 
         ObjectAnimator translatioinXAnimator = ObjectAnimator.ofFloat(mPhotoView,"translationX",translationX);
         ObjectAnimator translatioinYAnimator = ObjectAnimator.ofFloat(mPhotoView,"translationY",translationY);
@@ -374,6 +376,38 @@ public class DragMoreScrollView extends ScrollView {
         });
         animatorSet.playTogether(translatioinXAnimator,translatioinYAnimator,scaleXAnimator,scaleYAnimator,bgAnimator);
         animatorSet.start();
+    }
+
+    /**
+     * 放大进入详情
+     */
+    private void zoomToEnter(){
+        int translationX = mZoomRect.centerX() - getWidth() / 2;
+        int translationY = mZoomRect.centerY() - getHeight() / 2;
+        float scale = Math.min(mZoomRect.width() / (float) mPhotoWidth, mZoomRect.height() / (float) mPhotoHeight);
+        setBackgroundColor(Color.argb(0,0,0,0));
+        mPhotoView.setTranslationX(translationX);
+        mPhotoView.setTranslationY(translationY);
+        mPhotoView.setScaleX(scale);
+        mPhotoView.setScaleY(scale);
+
+        ObjectAnimator translatioinXAnimator = ObjectAnimator.ofFloat(mPhotoView,"translationX",0);
+        ObjectAnimator translatioinYAnimator = ObjectAnimator.ofFloat(mPhotoView,"translationY",0);
+        ObjectAnimator scaleXAnimator = ObjectAnimator.ofFloat(mPhotoView,"scaleX",1);
+        ObjectAnimator scaleYAnimator = ObjectAnimator.ofFloat(mPhotoView,"scaleY",1);
+
+        ValueAnimator bgAnimator = ValueAnimator.ofInt(0,255);
+        bgAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                setBackgroundColor(Color.argb((int) animation.getAnimatedValue(),0,0,0));
+            }
+        });
+        AnimatorSet animatorSet = new AnimatorSet().setDuration(mFullAnimDuration);
+        animatorSet.setInterpolator(DECELERATE_INTERPOLATOR);
+        animatorSet.playTogether(translatioinXAnimator,translatioinYAnimator,scaleXAnimator,scaleYAnimator,bgAnimator);
+        animatorSet.start();
+
     }
 
     /**
